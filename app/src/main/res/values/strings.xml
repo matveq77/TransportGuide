@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Транспорт Гид</string>
+    <string name="main_screen">Маршруты</string>
+    <string name="add_route">Добавить маршрут</string>
+    <string name="route_number">Номер маршрута</string>
+    <string name="route_desc">Описание (путь)</string>
+    <string name="save">Сохранить</string>
+    <string name="delete">Удалить</string>
+    <string name="update">Обновить</string>
+    <string name="deleting">Удаление</string>
+    <string name="settings">Настройки</string>
+    <string name="dark_mode">Темная тема</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="delete_confirm_title">Удалить маршрут?</string>
+    <string name="delete_confirm_msg">Вы точно хотите удалить этот маршрут?</string>
+    <string name="delete_route_number">Удалить маршрут №%1$s?</string>
+    <string name="route_display_number">Маршрут №%1$s</string>
+    <string name="cancel">Отмена</string>
+    <string name="added_date">Дата: %1$s</string>
+</resources>

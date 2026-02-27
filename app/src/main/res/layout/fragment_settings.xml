@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/themeSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/dark_mode"
+        android:textSize="18sp" />
+
+    <!-- Добавьте это в ваш LinearLayout в fragment_settings.xml -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Язык / Language"
+        android:layout_marginTop="20dp"/>
+
+    <Button
+        android:id="@+id/btnLangRu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Русский"/>
+
+    <Button
+        android:id="@+id/btnLangEn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="English"/>
+
+</LinearLayout>

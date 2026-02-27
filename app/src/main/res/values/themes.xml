@@ -1,0 +1,19 @@
+<resources>
+    <!-- 1. Ваша ОСНОВНАЯ тема приложения -->
+    <!-- Убедитесь, что parent начинается с Theme.Material3 или Theme.AppCompat -->
+    <style name="Theme.TransportGuide" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Ваши цвета здесь -->
+        <item name="colorPrimary">@color/purple_500</item>
+    </style>
+
+    <!-- 2. Тема для СПЛЕШ-ЭКРАНА -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+
+        <!-- ВАЖНО: Это заставляет систему сменить тему со Сплеша на Основную сразу после загрузки -->
+        <item name="postSplashScreenTheme">@style/Theme.TransportGuide</item>
+    </style>
+
+    <color name="purple_500">#D804FF</color>
+</resources>
