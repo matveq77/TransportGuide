@@ -63,6 +63,29 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         btnSettings.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
         }
+
+        // 1. Находим кнопку очистки по ID
+        val btnClear = view.findViewById<Button>(R.id.btnClear)
+
+        // 2. Вешаем слушатель нажатия
+        btnClear.setOnClickListener {
+            // 3. Показываем диалог подтверждения (чтобы не удалить всё случайно)
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.clear_all))
+                .setMessage(getString(R.string.clear_confirm_msg))
+                .setPositiveButton(getString(R.string.yes)) { _, _ ->
+                    // 4. ВОТ ЗДЕСЬ мы вызываем метод из ViewModel
+                    viewModel.clearAllRoutes()
+                }
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show()
+        }
+
+        // В onViewCreated
+        val btnRefresh = view.findViewById<Button>(R.id.btnRefresh) // Создайте ее в XML с этим ID
+        btnRefresh.setOnClickListener {
+            viewModel.refreshData() // Загрузка начнется только по клику!
+        }
     }
 
     private fun showDeleteDialog(route: Route) {
@@ -76,4 +99,5 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
+
 }

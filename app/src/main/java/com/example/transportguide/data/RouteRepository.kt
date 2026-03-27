@@ -1,40 +1,42 @@
 package com.example.transportguide.data
 
 import android.content.Context
-import androidx.lifecycle.LiveData
 import com.example.transportguide.network.ApiService
 import com.example.transportguide.utils.NetworkUtils
 
 class RouteRepository(private val routeDao: RouteDao, private val apiService: ApiService) {
 
-    // Весь список из локальной БД
-    val allRoutes: LiveData<List<Route>> = routeDao.getAll()
+    val allRoutes = routeDao.getAll()
 
-    // Метод для удаления (нужен для ViewModel)
-    suspend fun delete(route: Route) {
-        routeDao.delete(route)
-    }
+    suspend fun delete(route: Route) = routeDao.delete(route)
+    suspend fun deleteAll() = routeDao.deleteAll()
 
-    // Метод для вставки (нужен для обновления из API)
-    suspend fun insert(route: Route) {
-        routeDao.insert(route)
-    }
-
-    // Логика ОФФЛАЙН-РЕЖИМА (Веб-API + Кэширование)
     suspend fun refreshCache(context: Context) {
         if (NetworkUtils.isInternetAvailable(context)) {
             try {
-                val response = apiService.getTransportNews()
-                response.forEach { news ->
-                    val route = Route(
-                        number = news.id.toString(),
-                        description = news.title,
-                        date = "API Online"
-                    )
-                    routeDao.insert(route)
+                val response = apiService.getStations("Bern")
+
+                // Получаем текущую дату и время
+                // Создаем формат
+                val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+
+                // ПРИНУДИТЕЛЬНО устанавливаем часовой пояс (например, МСК)
+                sdf.timeZone = java.util.TimeZone.getTimeZone("GMT+3")
+
+                val currentTimestamp = sdf.format(java.util.Date())
+
+                response.stations.forEach { station ->
+                    if (station.name != null) {
+                        val route = Route(
+                            number = station.id ?: "N/A",
+                            description = station.name,
+                            date = currentTimestamp // Записываем реальное время загрузки
+                        )
+                        routeDao.insert(route)
+                    }
                 }
             } catch (e: Exception) {
-                // Ошибка сети — данные не обновятся, но старые останутся
+                android.util.Log.e("API_ERROR", "Ошибка: ${e.message}")
             }
         }
     }

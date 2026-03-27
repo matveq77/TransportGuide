@@ -8,7 +8,7 @@ interface RouteDao {
     @Query("SELECT * FROM routes ORDER BY id DESC")
     fun getAll(): LiveData<List<Route>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE) // Заменять старое новым, если ID совпал
     suspend fun insert(route: Route)
 
     @Update // Добавили
@@ -16,4 +16,10 @@ interface RouteDao {
 
     @Delete // Добавили
     suspend fun delete(route: Route)
+
+    @Query("DELETE FROM routes")
+    suspend fun deleteAll()
+
+    @Query("SELECT * FROM routes")
+    suspend fun getAllOnce(): List<Route> // Получить список один раз без наблюдения
 }

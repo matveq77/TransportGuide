@@ -18,4 +18,6 @@
     <string name="route_display_number">Маршрут №%1$s</string>
     <string name="cancel">Отмена</string>
     <string name="added_date">Дата: %1$s</string>
+    <string name="clear_all">Очистить</string>
+    <string name="clear_confirm_msg">Вы уверены, что хотите удалить ВСЕ записи?</string>
 </resources>

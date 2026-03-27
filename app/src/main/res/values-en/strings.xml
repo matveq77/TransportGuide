@@ -18,4 +18,6 @@
     <string name="route_display_number">Route No. %1$s</string>
     <string name="cancel">Cancel</string>
     <string name="added_date">Date: %1$s</string>
+    <string name="clear_all">Clear</string>
+    <string name="clear_confirm_msg">Are you sure you want to delete ALL records?</string>
 </resources>

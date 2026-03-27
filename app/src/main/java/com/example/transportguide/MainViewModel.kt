@@ -21,7 +21,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         repository = RouteRepository(dao, api)
         allRoutes = repository.allRoutes
 
-        refreshData()
+        //refreshData()
     }
 
     fun refreshData() {
@@ -34,6 +34,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteRoute(route: Route) {
         viewModelScope.launch {
             repository.delete(route) // Теперь это слово не будет красным
+        }
+    }
+
+    fun clearAllRoutes() {
+        viewModelScope.launch {
+            repository.deleteAll()
         }
     }
 }

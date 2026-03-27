@@ -1,22 +1,25 @@
 package com.example.transportguide.network
 
-import retrofit2.http.GET
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Query
 
-// Модель данных от сервера
-data class NewsResponse(
-    val id: Int,
-    val title: String,
-    val body: String
+// Модели для Швейцарского транспорта
+data class StationResponse(val stations: List<Station>)
+data class Station(
+    val id: String?,
+    val name: String?,
+    val type: String?
 )
 
 interface ApiService {
-    @GET("posts") // Берем список постов
-    suspend fun getTransportNews(): List<NewsResponse>
+    // Получаем остановки города. По умолчанию "Bern"
+    @GET("v1/locations")
+    suspend fun getStations(@Query("query") city: String = "Bern"): StationResponse
 
     companion object {
-        private const val BASE_URL = "https://jsonplaceholder.typicode.com/"
+        private const val BASE_URL = "https://transport.opendata.ch/"
 
         fun create(): ApiService {
             return Retrofit.Builder()
