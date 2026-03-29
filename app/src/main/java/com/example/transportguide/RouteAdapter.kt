@@ -1,23 +1,25 @@
 package com.example.transportguide
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.transportguide.data.Route
+import coil.load
 
 class RouteAdapter(
     private var routes: List<Route>,
-    private val onClick: (Route) -> Unit,        // Для редактирования
-    private val onLongClick: (Route) -> Unit     // Для удаления
+    private val onClick: (Route) -> Unit,
+    private val onLongClick: (Route) -> Unit
 ) : RecyclerView.Adapter<RouteAdapter.RouteViewHolder>() {
 
     class RouteViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val number: TextView = view.findViewById(R.id.tvRouteNumber)
         val desc: TextView = view.findViewById(R.id.tvRouteDesc)
         val date: TextView = view.findViewById(R.id.tvRouteDate)
+        val image: ImageView = view.findViewById(R.id.ivRouteImage)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RouteViewHolder {
@@ -25,25 +27,24 @@ class RouteAdapter(
         return RouteViewHolder(view)
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: RouteViewHolder, position: Int) {
         val route = routes[position]
         val context = holder.itemView.context
 
-        val tvDate = holder.itemView.findViewById<TextView>(R.id.tvRouteDate)
-
         holder.number.text = context.getString(R.string.route_display_number, route.number)
         holder.desc.text = route.description
-        tvDate.text = context.getString(R.string.added_date, route.date) // Устанавливаем дату
+        holder.date.text = route.date
 
-        // Обычный клик
-        holder.itemView.setOnClickListener { onClick(route) }
-
-        // Длинный клик (не забудьте вернуть true в конце!)
-        holder.itemView.setOnLongClickListener {
-            onLongClick(route)
-            true
+        // Отображение картинки
+        if (!route.imageUrl.isNullOrEmpty()) {
+            holder.image.visibility = View.VISIBLE
+            holder.image.load(route.imageUrl) // Загрузка через Coil
+        } else {
+            holder.image.visibility = View.GONE
         }
+
+        holder.itemView.setOnClickListener { onClick(route) }
+        holder.itemView.setOnLongClickListener { onLongClick(route); true }
     }
 
     override fun getItemCount() = routes.size

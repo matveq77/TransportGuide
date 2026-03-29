@@ -1,71 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="16dp">
+    android:padding="10dp">
 
-    <!-- Верхняя панель: Заголовок + Кнопки -->
+    <!-- Верхняя панель -->
     <LinearLayout
-        android:id="@+id/topPanel"
+        android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
         <TextView
-            android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/main_screen"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:ellipsize="end"
-            android:singleLine="true" />
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-        <!-- Контейнер для кнопок, чтобы они не разлетались -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnCloudFetch"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="☁"
+            android:backgroundTint="#9C27B0"
+            android:textColor="#FFFFFF"
+            android:layout_marginEnd="2dp"
+            android:padding="0dp" />
 
-            <Button
-                android:id="@+id/btnRefresh"
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:text="API"
-                android:textSize="12sp" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnNotify"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="🔔"
+            android:backgroundTint="#9C27B0"
+            android:textColor="#FFFFFF"
+            android:layout_marginEnd="2dp"
+            android:padding="0dp" />
 
-            <Button
-                android:id="@+id/btnClear"
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:backgroundTint="#FF5252"
-                android:text="CL"
-                android:textSize="12sp" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnRefresh"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="API"
+            android:textSize="10sp"
+            android:backgroundTint="#9C27B0"
+            android:textColor="#FFFFFF"
+            android:layout_marginEnd="2dp"
+            android:padding="0dp" />
 
-            <Button
-                android:id="@+id/btnSettings"
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="SET"
-                android:textSize="12sp" />
-        </LinearLayout>
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnClear"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="CL"
+            android:textSize="10sp"
+            android:backgroundTint="#FF5252"
+            android:textColor="#FFFFFF"
+            android:layout_marginEnd="2dp"
+            android:padding="0dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnSettings"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="SET"
+            android:textSize="10sp"
+            android:backgroundTint="#9C27B0"
+            android:textColor="#FFFFFF"
+            android:padding="0dp" />
     </LinearLayout>
 
-    <!-- Список теперь всегда ПОД верхней панелью -->
+    <LinearLayout
+        android:id="@+id/searchArea"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/header"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Поиск..."
+            android:textSize="14sp" />
+
+        <ImageButton
+            android:id="@+id/btnSort"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            android:background="?android:attr/selectableItemBackground" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/topPanel"
-        android:layout_marginTop="12dp" />
+        android:layout_below="@id/searchArea"
+        android:layout_marginTop="8dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAdd"
@@ -74,7 +112,5 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
-        android:contentDescription="@string/add_route"
         app:srcCompat="@android:drawable/ic_input_add" />
-
 </RelativeLayout>

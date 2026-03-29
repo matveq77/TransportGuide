@@ -14,7 +14,6 @@ data class Station(
 )
 
 interface ApiService {
-    // Получаем остановки города. По умолчанию "Bern"
     @GET("v1/locations")
     suspend fun getStations(@Query("query") city: String = "Bern"): StationResponse
 

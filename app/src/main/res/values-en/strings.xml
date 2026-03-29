@@ -20,4 +20,8 @@
     <string name="added_date">Date: %1$s</string>
     <string name="clear_all">Clear</string>
     <string name="clear_confirm_msg">Are you sure you want to delete ALL records?</string>
+    <string name="saving_cloud">Saving to cloud...</string>
+    <string name="select_photo">Attach photo</string>
+    <string name="error_empty_number">Enter number!</string>
+    <string name="photo_selected">Photo selected</string>
 </resources>

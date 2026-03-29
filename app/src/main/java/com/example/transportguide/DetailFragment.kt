@@ -1,96 +1,117 @@
 package com.example.transportguide
 
-import android.app.AlertDialog
+import android.app.DatePickerDialog
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
+import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.example.transportguide.data.AppDatabase
-import com.example.transportguide.data.Route
+import com.example.transportguide.data.*
+import com.example.transportguide.utils.ImageUploader
+import com.google.firebase.firestore.FirebaseFirestore
+import coil.load
 import kotlinx.coroutines.launch
-import android.app.DatePickerDialog // Импорт календаря
+import java.io.File
 import java.util.*
 
 class DetailFragment : Fragment(R.layout.fragment_detail) {
+
+    private var selectedImageFile: File? = null
+    private lateinit var db: AppDatabase
+    private val firestore = FirebaseFirestore.getInstance()
+
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            val file = File(requireContext().cacheDir, "temp_img.jpg")
+            requireContext().contentResolver.openInputStream(it)?.use { input ->
+                file.outputStream().use { output -> input.copyTo(output) }
+            }
+            selectedImageFile = file
+            view?.findViewById<ImageView>(R.id.ivPreview)?.apply {
+                visibility = View.VISIBLE
+                load(it)
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        db = AppDatabase.getDatabase(requireContext())
 
         val etNum = view.findViewById<EditText>(R.id.etNumber)
         val etDesc = view.findViewById<EditText>(R.id.etDesc)
         val etDate = view.findViewById<EditText>(R.id.etDate)
-        val db = AppDatabase.getDatabase(requireContext())
-        val btnDelete = view.findViewById<Button>(R.id.btnDelete)
-
-        // --- БЛОК КАЛЕНДАРЯ ---
-        // Сделаем поле даты нередактируемым с клавиатуры
-        etDate.isFocusable = false
-        etDate.isClickable = true
+        val btnSave = view.findViewById<Button>(R.id.btnSave)
+        val ivPreview = view.findViewById<ImageView>(R.id.ivPreview)
 
         etDate.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            val datePickerDialog = DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
-                // Форматируем дату в DD.MM.YYYY
-                val formattedDate = String.format("%02d.%02d.%d", selectedDay, selectedMonth + 1, selectedYear)
-                etDate.setText(formattedDate)
-            }, year, month, day)
-
-            datePickerDialog.show()
+            val cal = Calendar.getInstance()
+            DatePickerDialog(requireContext(), { _, y, m, d ->
+                etDate.setText(String.format(Locale.getDefault(), "%02d.%02d.%d", d, m + 1, y))
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
         }
-        // -----------------------
+
+        view.findViewById<Button>(R.id.btnPickImage).setOnClickListener { pickImage.launch("image/*") }
 
         val routeId = arguments?.getInt("routeId") ?: -1
+        val oldUrl = arguments?.getString("imageUrl")
 
         if (routeId != -1) {
             etNum.setText(arguments?.getString("number"))
             etDesc.setText(arguments?.getString("desc"))
             etDate.setText(arguments?.getString("date"))
-            view.findViewById<Button>(R.id.btnSave).text = getString(R.string.update)
-            btnDelete.visibility = View.VISIBLE
-        } else {
-            val sdf = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
-            etDate.setText(sdf.format(java.util.Date()))
+            if (!oldUrl.isNullOrEmpty()) {
+                ivPreview.visibility = View.VISIBLE
+                ivPreview.load(oldUrl)
+            }
+            btnSave.text = getString(R.string.update)
+            view.findViewById<Button>(R.id.btnDelete).visibility = View.VISIBLE
         }
 
-        view.findViewById<Button>(R.id.btnSave).setOnClickListener {
-            val route = Route(
-                id = if (routeId == -1) 0 else routeId,
-                number = etNum.text.toString(),
-                description = etDesc.text.toString(),
-                date = etDate.text.toString()
-            )
+        btnSave.setOnClickListener {
+            val num = etNum.text.toString()
+            val desc = etDesc.text.toString()
+            val date = etDate.text.toString()
 
-            lifecycleScope.launch {
-                if (routeId == -1) db.routeDao().insert(route)
-                else db.routeDao().update(route)
-                findNavController().popBackStack()
+            if (num.isEmpty()) {
+                etNum.error = getString(R.string.error_empty_number)
+                return@setOnClickListener
+            }
+
+            btnSave.isEnabled = false
+            btnSave.text = "Saving..."
+
+            if (selectedImageFile != null) {
+                ImageUploader.uploadImage(selectedImageFile!!) { url ->
+                    activity?.runOnUiThread {
+                        saveFinal(routeId, num, desc, date, url ?: oldUrl)
+                    }
+                }
+            } else {
+                saveFinal(routeId, num, desc, date, oldUrl)
             }
         }
 
-        btnDelete.setOnClickListener {
-            AlertDialog.Builder(requireContext())
-                .setTitle(getString(R.string.delete)) // Исправлено: обычно используется "Удалить"
-                .setMessage(getString(R.string.delete_confirm_msg))
-                .setPositiveButton(getString(R.string.yes)) { _, _ ->
-                    lifecycleScope.launch {
-                        val routeToDelete = Route(
-                            id = routeId,
-                            number = etNum.text.toString(),
-                            description = etDesc.text.toString(),
-                            date = etDate.text.toString()
-                        )
-                        db.routeDao().delete(routeToDelete)
-                        findNavController().popBackStack()
-                    }
-                }
-                .setNegativeButton(getString(R.string.cancel), null) // Обычно getString(R.string.cancel)
-                .show()
+        view.findViewById<Button>(R.id.btnDelete).setOnClickListener {
+            lifecycleScope.launch {
+                db.routeDao().delete(Route(id = routeId, number = "", description = "", date = ""))
+                findNavController().popBackStack()
+            }
+        }
+    }
+
+    private fun saveFinal(id: Int, num: String, desc: String, date: String, url: String?) {
+        val route = Route(if (id == -1) 0 else id, num, desc, date, url)
+        lifecycleScope.launch {
+            if (id == -1) db.routeDao().insert(route) else db.routeDao().update(route)
+
+            val cloudData = hashMapOf("number" to num, "description" to desc, "date" to date, "imageUrl" to (url ?: ""))
+            firestore.collection("routes").add(cloudData).addOnCompleteListener {
+                if (isAdded) findNavController().popBackStack()
+            }
         }
     }
 }

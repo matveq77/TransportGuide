@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "262669160295",
+    "project_id": "transportguide-49f94",
+    "storage_bucket": "transportguide-49f94.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:262669160295:android:937546ca67ea23819ae9c2",
+        "android_client_info": {
+          "package_name": "com.example.transportguide"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMAK6tVJNkem9m9C_69PunggLZ70ZXUls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

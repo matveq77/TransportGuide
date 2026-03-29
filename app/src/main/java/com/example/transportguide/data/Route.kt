@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "routes")
 data class Route(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val number: String,      // Номер маршрута
-    val description: String, // Описание
-    val date: String         // Дата добавления
+    val number: String,
+    val description: String,
+    val date: String,
+    val imageUrl: String? = null // Поле для ссылки на фото
 )

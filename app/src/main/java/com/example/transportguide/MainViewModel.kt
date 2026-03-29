@@ -1,45 +1,52 @@
 package com.example.transportguide
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.viewModelScope
-import com.example.transportguide.data.AppDatabase
-import com.example.transportguide.data.Route
-import com.example.transportguide.data.RouteRepository
+import androidx.lifecycle.*
+import com.example.transportguide.data.*
 import com.example.transportguide.network.ApiService
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: RouteRepository
-    val allRoutes: LiveData<List<Route>>
+    private val allRoutesFromDb: LiveData<List<Route>>
+    private val searchQuery = MutableLiveData("")
+    private val sortOrder = MutableLiveData(0) // 0 - по номеру, 1 - по описанию
 
-    init {
+    val filteredRoutes: LiveData<List<Route>> = MediatorLiveData<List<Route>>().apply {
         val dao = AppDatabase.getDatabase(application).routeDao()
-        val api = ApiService.create()
-        repository = RouteRepository(dao, api)
-        allRoutes = repository.allRoutes
+        repository = RouteRepository(dao, ApiService.create())
+        allRoutesFromDb = repository.allRoutes
 
-        //refreshData()
+        addSource(allRoutesFromDb) { value = filterAndSort(it, searchQuery.value, sortOrder.value) }
+        addSource(searchQuery) { value = filterAndSort(allRoutesFromDb.value, it, sortOrder.value) }
+        addSource(sortOrder) { value = filterAndSort(allRoutesFromDb.value, searchQuery.value, it) }
     }
 
-    fun refreshData() {
-        viewModelScope.launch {
-            repository.refreshCache(getApplication())
-        }
+    fun setSearchQuery(query: String) { searchQuery.value = query }
+
+    // Переключение сортировки
+    fun toggleSort() {
+        sortOrder.value = if (sortOrder.value == 0) 1 else 0
     }
 
-    // Метод удаления, который вызывается из фрагмента
-    fun deleteRoute(route: Route) {
-        viewModelScope.launch {
-            repository.delete(route) // Теперь это слово не будет красным
-        }
+    fun refreshData() = viewModelScope.launch { repository.refreshCache(getApplication()) }
+    fun deleteRoute(route: Route) = viewModelScope.launch { repository.delete(route) }
+    fun clearAllRoutes() = viewModelScope.launch { repository.deleteAll() }
+
+    // Запуск синхронизации с облаком
+    fun loadFromCloud() {
+        repository.fetchFromCloud { /* готово */ }
     }
 
-    fun clearAllRoutes() {
-        viewModelScope.launch {
-            repository.deleteAll()
+    private fun filterAndSort(list: List<Route>?, query: String?, order: Int?): List<Route> {
+        var result = list ?: emptyList()
+        if (!query.isNullOrEmpty()) {
+            result = result.filter {
+                it.number.contains(query, ignoreCase = true) ||
+                        it.description.contains(query, ignoreCase = true)
+            }
         }
+        return if (order == 0) result.sortedBy { it.number } else result.sortedBy { it.description }
     }
 }
