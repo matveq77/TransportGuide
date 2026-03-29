@@ -26,6 +26,11 @@
             android:name="desc"
             app:argType="string"
             android:defaultValue='""' />
+        <argument
+            android:name="imageUrl"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
     <fragment

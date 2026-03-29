@@ -1,13 +1,13 @@
 [versions]
-agp = "8.13.2"
-kotlin = "2.0.21"
+agp = "9.0.1"
+kotlin = "2.1.0"
 coreKtx = "1.13.1"
 appcompat = "1.7.0"
 material = "1.12.0"
 constraintlayout = "2.1.4"
 navigation = "2.8.3"
-room = "2.6.1"
-ksp = "2.0.21-1.0.27"
+ksp = "2.1.0-1.0.29"
+room = "2.7.0-beta01"
 cardview = "1.0.0"
 firebaseBom = "33.1.0"
 

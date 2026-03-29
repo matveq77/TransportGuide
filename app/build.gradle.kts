@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
+    id("com.google.devtools.ksp") // ВОЗВРАЩАЕМ KSP
     id("com.google.gms.google-services")
 }
 
@@ -48,7 +48,7 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.8.3")
 
     // Room
-    val roomVersion = "2.6.1"
+    val roomVersion = "2.7.0-beta01" // ОБЯЗАТЕЛЬНО ЭТА ВЕРСИЯ
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")

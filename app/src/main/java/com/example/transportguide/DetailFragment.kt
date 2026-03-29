@@ -82,15 +82,24 @@ class DetailFragment : Fragment(R.layout.fragment_detail) {
             }
 
             btnSave.isEnabled = false
-            btnSave.text = "Saving..."
+            btnSave.text = "Uploading..."
 
             if (selectedImageFile != null) {
-                ImageUploader.uploadImage(selectedImageFile!!) { url ->
+                // 1. Сначала грузим фото на сервер
+                ImageUploader.uploadImage(selectedImageFile!!) { newUrl ->
                     activity?.runOnUiThread {
-                        saveFinal(routeId, num, desc, date, url ?: oldUrl)
+                        // 2. Когда получили URL (или null при ошибке), сохраняем в БД
+                        if (newUrl != null) {
+                            saveFinal(routeId, num, desc, date, newUrl)
+                        } else {
+                            // Если ошибка загрузки, используем старый URL или ничего
+                            Toast.makeText(requireContext(), "Photo upload failed!", Toast.LENGTH_SHORT).show()
+                            saveFinal(routeId, num, desc, date, oldUrl)
+                        }
                     }
                 }
             } else {
+                // Если новое фото не выбрано, просто сохраняем со старым URL
                 saveFinal(routeId, num, desc, date, oldUrl)
             }
         }
@@ -104,14 +113,26 @@ class DetailFragment : Fragment(R.layout.fragment_detail) {
     }
 
     private fun saveFinal(id: Int, num: String, desc: String, date: String, url: String?) {
+        // Если id == -1, Room создаст новый ID (передаем 0), иначе используем текущий
         val route = Route(if (id == -1) 0 else id, num, desc, date, url)
-        lifecycleScope.launch {
-            if (id == -1) db.routeDao().insert(route) else db.routeDao().update(route)
 
-            val cloudData = hashMapOf("number" to num, "description" to desc, "date" to date, "imageUrl" to (url ?: ""))
-            firestore.collection("routes").add(cloudData).addOnCompleteListener {
-                if (isAdded) findNavController().popBackStack()
+        lifecycleScope.launch {
+            if (id == -1) {
+                db.routeDao().insert(route)
+            } else {
+                db.routeDao().update(route)
             }
+
+            // Отправка в Firebase (url теперь точно не пустой, если загрузка прошла)
+            val cloudData = hashMapOf(
+                "number" to num,
+                "description" to desc,
+                "date" to date,
+                "imageUrl" to (url ?: "")
+            )
+            firestore.collection("routes").add(cloudData)
+
+            if (isAdded) findNavController().popBackStack()
         }
     }
 }

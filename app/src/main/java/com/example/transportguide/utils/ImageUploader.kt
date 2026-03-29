@@ -10,16 +10,18 @@ import java.io.IOException
 object ImageUploader {
     private val client = OkHttpClient()
 
-    // Вставлен ваш ключ
-    private const val PUBLIC_KEY = "public_t5H5Zij3Zs9La7BOXyoNpYYqiIE="
-    private const val UPLOAD_ENDPOINT = "https://upload.imagekit.io/api/v1/files/upload"
+    // ВАШИ ДАННЫЕ ИЗ CLOUDINARY
+    private const val CLOUD_NAME = "dcu38obex"
+    // ВСТАВЬТЕ СЮДА ИМЯ ПРЕСЕТА, КОТОРЫЙ ВЫ ВКЛЮЧИЛИ НА ШАГЕ 1
+    private const val UPLOAD_PRESET = "ml_default"
+
+    private const val UPLOAD_ENDPOINT = "https://api.cloudinary.com/v1_1/$CLOUD_NAME/image/upload"
 
     fun uploadImage(file: File, onResult: (String?) -> Unit) {
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("file", file.name, file.asRequestBody("image/*".toMediaTypeOrNull()))
-            .addFormDataPart("fileName", "img_${System.currentTimeMillis()}.jpg")
-            .addFormDataPart("publicKey", PUBLIC_KEY)
+            .addFormDataPart("upload_preset", UPLOAD_PRESET) // Обязательный параметр
             .build()
 
         val request = Request.Builder()
@@ -29,19 +31,24 @@ object ImageUploader {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                android.util.Log.e("UPLOAD_DEBUG", "Network error: ${e.message}")
                 onResult(null)
             }
 
             override fun onResponse(call: Call, response: Response) {
-                try {
-                    val body = response.body?.string()
-                    if (response.isSuccessful && body != null) {
-                        val url = JSONObject(body).getString("url")
+                val body = response.body?.string()
+                android.util.Log.d("UPLOAD_DEBUG", "Response: $body")
+
+                if (response.isSuccessful && body != null) {
+                    try {
+                        // Cloudinary возвращает URL в поле "secure_url"
+                        val json = JSONObject(body)
+                        val url = json.getString("secure_url")
                         onResult(url)
-                    } else {
+                    } catch (e: Exception) {
                         onResult(null)
                     }
-                } catch (e: Exception) {
+                } else {
                     onResult(null)
                 }
             }

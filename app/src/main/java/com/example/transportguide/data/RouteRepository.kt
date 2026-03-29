@@ -13,10 +13,10 @@ class RouteRepository(private val routeDao: RouteDao, private val apiService: Ap
     val allRoutes = routeDao.getAll()
     private val firestore = FirebaseFirestore.getInstance()
 
-    suspend fun delete(route: Route) = routeDao.delete(route)
-    suspend fun deleteAll() = routeDao.deleteAll()
-    suspend fun insert(route: Route) = routeDao.insert(route)
-    suspend fun update(route: Route) = routeDao.update(route)
+    suspend fun delete(route: Route) { routeDao.delete(route) }
+    suspend fun deleteAll() { routeDao.deleteAll() }
+    suspend fun insert(route: Route) { routeDao.insert(route) }
+    suspend fun update(route: Route) { routeDao.update(route) }
 
     suspend fun refreshCache(context: Context) {
         if (NetworkUtils.isInternetAvailable(context)) {
