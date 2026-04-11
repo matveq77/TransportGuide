@@ -2,8 +2,17 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainFragment">
-
+    app:startDestination="@id/authFragment">
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="com.example.transportguide.AuthFragment"
+        android:label="Вход" >
+        <action
+            android:id="@+id/action_authFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/authFragment"
+            app:popUpToInclusive="true" /> <!-- Чтобы нельзя было вернуться назад к логину -->
+    </fragment>
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.example.transportguide.MainFragment"
@@ -42,4 +51,9 @@
         android:id="@+id/settingsFragment"
         android:name="com.example.transportguide.SettingsFragment"
         android:label="Settings" />
+        <action
+            android:id="@+id/action_settingsFragment_to_authFragment"
+            app:destination="@id/authFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
 </navigation>

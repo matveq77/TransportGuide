@@ -39,4 +39,13 @@
         android:layout_height="wrap_content"
         android:text="English"/>
 
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="#FF5252"
+        android:text="Выйти из аккаунта"
+        android:textColor="#FFFFFF" />
+
 </LinearLayout>
