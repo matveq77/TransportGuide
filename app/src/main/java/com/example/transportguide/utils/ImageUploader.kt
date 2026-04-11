@@ -10,9 +10,8 @@ import java.io.IOException
 object ImageUploader {
     private val client = OkHttpClient()
 
-    // ВАШИ ДАННЫЕ ИЗ CLOUDINARY
     private const val CLOUD_NAME = "dcu38obex"
-    // ВСТАВЬТЕ СЮДА ИМЯ ПРЕСЕТА, КОТОРЫЙ ВЫ ВКЛЮЧИЛИ НА ШАГЕ 1
+
     private const val UPLOAD_PRESET = "ml_default"
 
     private const val UPLOAD_ENDPOINT = "https://api.cloudinary.com/v1_1/$CLOUD_NAME/image/upload"
