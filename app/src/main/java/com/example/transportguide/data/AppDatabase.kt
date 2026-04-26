@@ -5,8 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-// Мы подняли версию до 2, так как структура изменилась (добавили imageUrl)
-@Database(entities = [Route::class], version = 2, exportSchema = false)
+// Увеличиваем версию до 3, так как мы добавили поле userId в сущность Route
+@Database(entities = [Route::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun routeDao(): RouteDao
 
@@ -20,7 +20,6 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java, "transport_db"
                 )
-                    // ЭТА СТРОЧКА ВАЖНА: она автоматически пересоздаст базу при изменении версии
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

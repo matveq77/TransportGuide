@@ -2,21 +2,24 @@ package com.example.transportguide
 
 import android.app.DatePickerDialog
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.transportguide.data.*
 import com.example.transportguide.utils.ImageUploader
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import coil.load
 import kotlinx.coroutines.launch
 import java.io.File
+import java.text.SimpleDateFormat
 import java.util.*
 
 class DetailFragment : Fragment(R.layout.fragment_detail) {
@@ -24,7 +27,9 @@ class DetailFragment : Fragment(R.layout.fragment_detail) {
     private var selectedImageFile: File? = null
     private lateinit var db: AppDatabase
     private val firestore = FirebaseFirestore.getInstance()
-    private var currentImageUrl: String? = null // Переменная для хранения URL
+    private val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    private var currentImageUrl: String? = null
+    private var photoUri: Uri? = null
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
@@ -40,14 +45,11 @@ class DetailFragment : Fragment(R.layout.fragment_detail) {
         }
     }
 
-    private val takePhoto = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-        bitmap?.let {
-            val file = File(requireContext().cacheDir, "camera_img.jpg")
-            file.outputStream().use { it1 -> it.compress(Bitmap.CompressFormat.JPEG, 100, it1) }
-            selectedImageFile = file
+    private val takePhoto = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success && selectedImageFile != null) {
             view?.findViewById<ImageView>(R.id.ivPreview)?.apply {
                 visibility = View.VISIBLE
-                setImageBitmap(it)
+                load(selectedImageFile)
             }
         }
     }
@@ -63,10 +65,19 @@ class DetailFragment : Fragment(R.layout.fragment_detail) {
         val ivPreview = view.findViewById<ImageView>(R.id.ivPreview)
         val btnDelete = view.findViewById<Button>(R.id.btnDelete)
 
-        view.findViewById<Button>(R.id.btnTakePhoto).setOnClickListener { takePhoto.launch(null) }
+        view.findViewById<Button>(R.id.btnTakePhoto).setOnClickListener {
+            val photoFile = createPhotoFile()
+            selectedImageFile = photoFile
+            photoUri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                photoFile
+            )
+            takePhoto.launch(photoUri)
+        }
+        
         view.findViewById<Button>(R.id.btnPickImage).setOnClickListener { pickImage.launch("image/*") }
 
-        // ОБНОВЛЕННЫЙ ШАРИНГ (отправляет все данные)
         view.findViewById<Button>(R.id.btnShare).setOnClickListener {
             val number = etNum.text.toString()
             val desc = etDesc.text.toString()
@@ -90,7 +101,7 @@ class DetailFragment : Fragment(R.layout.fragment_detail) {
         }
 
         val routeId = arguments?.getInt("routeId") ?: -1
-        currentImageUrl = arguments?.getString("imageUrl") // Получаем URL из аргументов
+        currentImageUrl = arguments?.getString("imageUrl")
 
         if (routeId != -1) {
             etNum.setText(arguments?.getString("number"))
@@ -131,25 +142,37 @@ class DetailFragment : Fragment(R.layout.fragment_detail) {
 
         btnDelete.setOnClickListener {
             lifecycleScope.launch {
-                db.routeDao().delete(Route(id = routeId, number = "", description = "", date = ""))
+                db.routeDao().delete(Route(id = routeId, userId = userId, number = "", description = "", date = ""))
                 findNavController().popBackStack()
             }
         }
     }
 
+    private fun createPhotoFile(): File {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+    }
+
     private fun saveFinal(id: Int, num: String, desc: String, date: String, url: String?) {
-        val route = Route(if (id == -1) 0 else id, num, desc, date, url)
+        val route = Route(
+            id = if (id == -1) 0 else id,
+            userId = userId,
+            number = num,
+            description = desc,
+            date = date,
+            imageUrl = url
+        )
         lifecycleScope.launch {
             if (id == -1) db.routeDao().insert(route) else db.routeDao().update(route)
 
-            // Отправка в облако
             val cloudData = hashMapOf(
                 "number" to num,
                 "description" to desc,
                 "date" to date,
                 "imageUrl" to (url ?: "")
             )
-            firestore.collection("routes").document(num).set(cloudData) // Используем номер как ID документа, чтобы не было дублей в Firebase
+            firestore.collection("users").document(userId).collection("routes").document(num).set(cloudData)
 
             findNavController().popBackStack()
         }
